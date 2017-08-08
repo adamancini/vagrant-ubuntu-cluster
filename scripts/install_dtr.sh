@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 < /dev/urandom tr -dc a-f0-9 | head -c${1:-12} > /vagrant/dtr-replica-id
 ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/dtr-node1-ipaddr
@@ -12,6 +13,7 @@ sudo -E sh -c 'curl -k https://${UCP_IPADDR}/ca > /home/ubuntu/ucp-ca.pem'
 # Sleep 35 seconds to wait for node registration
 sleep 35
 
+docker load < ./dtr-2.2.5.tar.gz
 # Install DTR
 sudo -E sh -c 'docker run --rm docker/dtr:${DTR_VERSION} install --ucp-url https://"${UCP_IPADDR}" --ucp-node dtr-node1 --replica-id "${DTR_REPLICA_ID}" --dtr-external-url https://dtr.local --ucp-username admin --ucp-password "${UCP_PASSWORD}" --ucp-ca "$(cat ucp-ca.pem)"'
 # Run backup of DTR

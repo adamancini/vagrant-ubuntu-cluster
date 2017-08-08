@@ -38,7 +38,7 @@ https://www.virtualbox.org/wiki/Downloads
 
 ## Download Ubuntu Xenial box
 ```
-$ vagrant init ubuntu/xenial64
+$ vagrant pull ubuntu/xenial64
 ```
 
 ## Create files in project to store environment variables with custom values for use by Vagrant
@@ -47,14 +47,16 @@ ee_url
 ucp_password
 ```
 
+## Download UCP & DTR Images tarballs and place in ./files
+
 ## Provide Docker EE license in project folder
 ```
 docker_subscription.lic
 ```
 
-## Install [vagrant-landrush](https://github.com/vagrant-landrush/landrush) plugin
+## Install [vagrant-landrush](https://github.com/vagrant-landrush/landrush) plugin and cachier to cache apt data
 ```
-
+$ vagrant plugin install vagrant-cachier
 $ vagrant plugin install landrush
 $ vagrant plugin install vagrant-hostsupdater
 $ vagrant plugin install vagrant-multiprovider-snap

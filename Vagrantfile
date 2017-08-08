@@ -10,6 +10,12 @@ Vagrant.configure(2) do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
+   if Vagrant.has_plugin?("vagrant-cachier")
+    # Configure cached packages to be shared between instances of the same base box.
+    # More info on the "Usage" link above
+    config.cache.scope = :box
+  end
+
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
 
@@ -69,6 +75,7 @@ Vagrant.configure(2) do |config|
         sudo cp /vagrant/scripts/install_ucp.sh .
         sudo cp /vagrant/scripts/create_tokens.sh .
         sudo cp /vagrant/scripts/visualizer.sh .
+        sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
         sudo chmod +x install_ee.sh
         sudo chmod +x install_ucp.sh
         sudo chmod +x create_tokens.sh
@@ -76,7 +83,7 @@ Vagrant.configure(2) do |config|
         ./install_ee.sh
         ./install_ucp.sh
         ./create_tokens.sh
-        ./visualizer.sh
+        # ./visualizer.sh
      SHELL
     end
 
@@ -98,6 +105,8 @@ Vagrant.configure(2) do |config|
         sudo ntpdate -s time.nist.gov
         sudo cp /vagrant/scripts/install_ee.sh .
         sudo cp /vagrant/scripts/join_manager.sh .
+        sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
+
         sudo chmod +x install_ee.sh
         sudo chmod +x join_manager.sh
         ./install_ee.sh
@@ -123,6 +132,7 @@ Vagrant.configure(2) do |config|
         sudo ntpdate -s time.nist.gov
         sudo cp /vagrant/scripts/install_ee.sh .
         sudo cp /vagrant/scripts/join_manager.sh .
+        sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
         sudo chmod +x install_ee.sh
         sudo chmod +x join_manager.sh
         ./install_ee.sh
@@ -151,6 +161,8 @@ Vagrant.configure(2) do |config|
         sudo cp /vagrant/scripts/install_dtr.sh .
         sudo cp /vagrant/scripts/prepopulate_dtr.sh .
         sudo cp /vagrant/scripts/backup_dtr.sh .
+        sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
+        sudo cp /vagrant/files/dtr-2.2.5.tar.gz
         sudo chmod +x install_ee.sh
         sudo chmod +x join_worker.sh
         sudo chmod +x install_dtr.sh
@@ -180,6 +192,7 @@ Vagrant.configure(2) do |config|
         sudo ntpdate -s time.nist.gov
         sudo cp /vagrant/scripts/install_ee.sh .
         sudo cp /vagrant/scripts/join_worker.sh .
+        sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
         sudo chmod +x install_ee.sh
         sudo chmod +x join_worker.sh
         ./install_ee.sh
@@ -205,6 +218,7 @@ Vagrant.configure(2) do |config|
         sudo ntpdate -s time.nist.gov
         sudo cp /vagrant/scripts/install_ee.sh .
         sudo cp /vagrant/scripts/join_worker.sh .
+        sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
         sudo chmod +x install_ee.sh
         sudo chmod +x join_worker.sh
         sleep 5

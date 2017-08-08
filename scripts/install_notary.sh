@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 sudo apt-get install -y unzip jq
 
 export UCP_IPADDR=$(cat /vagrant/ucp-node1-ipaddr)
