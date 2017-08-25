@@ -14,3 +14,5 @@ swarm-join-token-*
 *.tar
 files/dtr*
 files/ucp*
+ucp-bundle*
+bundle*
