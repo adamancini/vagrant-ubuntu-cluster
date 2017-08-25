@@ -1,0 +1,17 @@
+[ucp]
+ucp-node[1:3].local
+
+[dtr]
+dtr-node1.local
+
+[worker]
+worker-node[1:2].local
+
+[haproxy]
+haproxy.local
+
+[cluster:children]
+ucp
+dtr
+worker
+

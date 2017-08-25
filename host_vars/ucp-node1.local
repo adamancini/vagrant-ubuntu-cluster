@@ -1,0 +1,5 @@
+---
+ansible_ssh_private_key_file: /home/ada/docker/supportlab/vagrant-ubuntu-cluster/.vagrant/machines/ucp-node1/virtualbox/private_key
+ansible_host: 127.0.0.1
+ansible_user: ubuntu
+ansible_port: 2200
