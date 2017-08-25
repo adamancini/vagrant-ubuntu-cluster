@@ -9,12 +9,11 @@ Vagrant.configure(2) do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
-
-   if Vagrant.has_plugin?("vagrant-cachier")
+#   if Vagrant.has_plugin?("vagrant-cachier")
     # Configure cached packages to be shared between instances of the same base box.
     # More info on the "Usage" link above
-    config.cache.scope = :box
-  end
+#    config.cache.scope = :box
+#  end
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
