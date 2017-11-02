@@ -54,9 +54,8 @@ ucp_password
 docker_subscription.lic
 ```
 
-## Install [vagrant-landrush](https://github.com/vagrant-landrush/landrush) plugin and cachier to cache apt data
+## Install [vagrant-landrush](https://github.com/vagrant-landrush/landrush) plugin
 ```
-$ vagrant plugin install vagrant-cachier
 $ vagrant plugin install landrush
 $ vagrant plugin install vagrant-hostsupdater
 $ vagrant plugin install vagrant-multiprovider-snap
