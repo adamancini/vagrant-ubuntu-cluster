@@ -14,10 +14,15 @@ Vagrant.configure(2) do |config|
     # More info on the "Usage" link above
 #    config.cache.scope = :box
 #  end
+  config.vm.provider :virtualbox do |v|
+        # ... Other stuff here
 
+        # Set the timesync threshold to 10 seconds, instead of the default 20 minutes.
+        v.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000]
+    end
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-
+    config.hostsupdater.remove_on_suspend = false
     # Docker EE node for ubuntu 7.3
     config.vm.define "haproxy" do |haproxy_node|
       haproxy_node.vm.box = "ubuntu/xenial64"
@@ -62,7 +67,7 @@ Vagrant.configure(2) do |config|
       ubuntu_ucp_node1.vm.hostname = "ucp-node1.local"
       ubuntu_ucp_node1.landrush.enabled = true
       config.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", "2500"]
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
         vb.customize ["modifyvm", :id, "--cpus", "2"]
         vb.name = "ubuntu-ucp-node1"
       end
@@ -94,7 +99,7 @@ Vagrant.configure(2) do |config|
       ubuntu_ucp_node2.vm.hostname = "ucp-node2.local"
       ubuntu_ucp_node2.landrush.enabled = true
       config.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", "2500"]
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
         vb.customize ["modifyvm", :id, "--cpus", "2"]
         vb.name = "ubuntu-ucp-node2"
       end
@@ -147,7 +152,7 @@ Vagrant.configure(2) do |config|
       ubuntu_dtr_node1.vm.hostname = "dtr-node1.local"
       ubuntu_dtr_node1.landrush.enabled = true
       config.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--memory", "1024"]
         vb.customize ["modifyvm", :id, "--cpus", "2"]
         vb.name = "ubuntu-dtr-node1"
       end
@@ -181,7 +186,7 @@ Vagrant.configure(2) do |config|
       ubuntu_worker_node1.vm.hostname = "worker-node1.local"
       ubuntu_worker_node1.landrush.enabled = true
       config.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", "1024"]
+        vb.customize ["modifyvm", :id, "--memory", "1500"]
         vb.customize ["modifyvm", :id, "--cpus", "2"]
         vb.name = "ubuntu-worker-node1"
       end
@@ -207,7 +212,7 @@ Vagrant.configure(2) do |config|
       ubuntu_worker_node2.vm.hostname = "worker-node2.local"
       ubuntu_worker_node2.landrush.enabled = true
       config.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", "1024"]
+        vb.customize ["modifyvm", :id, "--memory", "1500"]
         vb.customize ["modifyvm", :id, "--cpus", "2"]
         vb.name = "ubuntu-worker-node2"
       end
