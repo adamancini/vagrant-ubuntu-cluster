@@ -10,7 +10,7 @@ worker-node[1:2].local
 [haproxy]
 haproxy.local
 
-[cluster:children]
+[swarm:children]
 ucp
 dtr
 worker
