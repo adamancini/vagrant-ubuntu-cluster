@@ -3,11 +3,9 @@
 
 Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox do |v|
-        # ... Other stuff here
-
-        # Set the timesync threshold to 10 seconds, instead of the default 20 minutes.
-        v.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000]
-    end
+    # Set the timesync threshold to 10 seconds, instead of the default 20 minutes.
+    v.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000]
+  end
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.hostsupdater.remove_on_suspend = false
