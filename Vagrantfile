@@ -76,57 +76,57 @@ Vagrant.configure(2) do |config|
    SHELL
   end
 
-  # Docker EE node for ubuntu 7.3
-  config.vm.define "ucp-node2" do |ubuntu_ucp_node2|
-    config.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.name = "ubuntu-ucp-node2"
-    end
-    ubuntu_ucp_node2.vm.box = "ubuntu/xenial64"
-    ubuntu_ucp_node2.vm.network "private_network", ip: "172.28.128.32"
-    ubuntu_ucp_node2.landrush.tld = 'local'
-    ubuntu_ucp_node2.vm.hostname = "ucp-node2.local"
-    ubuntu_ucp_node2.landrush.enabled = true
-    ubuntu_ucp_node2.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_manager.sh .
-      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_manager.sh
-      ./install_ee.sh
-      ./join_manager.sh
-    SHELL
-  end
+  # # Docker EE node for ubuntu 7.3
+  # config.vm.define "ucp-node2" do |ubuntu_ucp_node2|
+  #   config.vm.provider :virtualbox do |vb|
+  #     vb.customize ["modifyvm", :id, "--memory", "2048"]
+  #     vb.customize ["modifyvm", :id, "--cpus", "2"]
+  #     vb.name = "ubuntu-ucp-node2"
+  #   end
+  #   ubuntu_ucp_node2.vm.box = "ubuntu/xenial64"
+  #   ubuntu_ucp_node2.vm.network "private_network", ip: "172.28.128.32"
+  #   ubuntu_ucp_node2.landrush.tld = 'local'
+  #   ubuntu_ucp_node2.vm.hostname = "ucp-node2.local"
+  #   ubuntu_ucp_node2.landrush.enabled = true
+  #   ubuntu_ucp_node2.vm.provision "shell", inline: <<-SHELL
+  #     sudo apt-get update
+  #     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+  #     sudo ntpdate -s time.nist.gov
+  #     sudo cp /vagrant/scripts/install_ee.sh .
+  #     sudo cp /vagrant/scripts/join_manager.sh .
+  #     sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
+  #     sudo chmod +x install_ee.sh
+  #     sudo chmod +x join_manager.sh
+  #     ./install_ee.sh
+  #     ./join_manager.sh
+  #   SHELL
+  # end
 
-  # Docker EE node for ubuntu 7.3
-  config.vm.define "ucp-node3" do |ubuntu_ucp_node3|
-    config.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.name = "ubuntu-ucp-node3"
-    end
-    ubuntu_ucp_node3.vm.box = "ubuntu/xenial64"
-    ubuntu_ucp_node3.vm.network "private_network", ip: "172.28.128.33"
-    ubuntu_ucp_node3.landrush.tld = 'local'
-    ubuntu_ucp_node3.vm.hostname = "ucp-node3.local"
-    ubuntu_ucp_node3.landrush.enabled = true
-    ubuntu_ucp_node3.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_manager.sh .
-      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_manager.sh
-      ./install_ee.sh
-      ./join_manager.sh
-   SHELL
-  end
+  # # Docker EE node for ubuntu 7.3
+  # config.vm.define "ucp-node3" do |ubuntu_ucp_node3|
+  #   config.vm.provider :virtualbox do |vb|
+  #     vb.customize ["modifyvm", :id, "--memory", "2048"]
+  #     vb.customize ["modifyvm", :id, "--cpus", "2"]
+  #     vb.name = "ubuntu-ucp-node3"
+  #   end
+  #   ubuntu_ucp_node3.vm.box = "ubuntu/xenial64"
+  #   ubuntu_ucp_node3.vm.network "private_network", ip: "172.28.128.33"
+  #   ubuntu_ucp_node3.landrush.tld = 'local'
+  #   ubuntu_ucp_node3.vm.hostname = "ucp-node3.local"
+  #   ubuntu_ucp_node3.landrush.enabled = true
+  #   ubuntu_ucp_node3.vm.provision "shell", inline: <<-SHELL
+  #     sudo apt-get update
+  #     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+  #     sudo ntpdate -s time.nist.gov
+  #     sudo cp /vagrant/scripts/install_ee.sh .
+  #     sudo cp /vagrant/scripts/join_manager.sh .
+  #     sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
+  #     sudo chmod +x install_ee.sh
+  #     sudo chmod +x join_manager.sh
+  #     ./install_ee.sh
+  #     ./join_manager.sh
+  #  SHELL
+  # end
 
   # Docker EE node for ubuntu 7.3
   config.vm.define "dtr-node1" do |ubuntu_dtr_node1|
