@@ -214,4 +214,31 @@ Vagrant.configure(2) do |config|
       ./join_worker.sh
    SHELL
   end
+
+  # Docker EE node for ubuntu 7.3
+  config.vm.define "worker-node3" do |ubuntu_worker_node3|
+    config.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "1500"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+      vb.name = "ubuntu-worker-node3"
+    end
+    ubuntu_worker_node3.vm.box = "ubuntu/xenial64"
+    ubuntu_worker_node3.vm.network "private_network", ip: "172.28.128.39"
+    ubuntu_worker_node3.landrush.tld = 'local'
+    ubuntu_worker_node3.vm.hostname = "worker-node3.local"
+    ubuntu_worker_node3.landrush.enabled = true
+    ubuntu_worker_node3.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+      sudo ntpdate -s time.nist.gov
+      sudo cp /vagrant/scripts/install_ee.sh .
+      sudo cp /vagrant/scripts/join_worker.sh .
+      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
+      sudo chmod +x install_ee.sh
+      sudo chmod +x join_worker.sh
+      sleep 5
+      # ./install_ee.sh
+      # ./join_worker.sh
+   SHELL
+  end
 end
