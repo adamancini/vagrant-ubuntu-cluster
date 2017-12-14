@@ -18,6 +18,7 @@ Vagrant.configure(2) do |config|
     haproxy_node.vm.box = "ubuntu/xenial64"
     haproxy_node.vm.network "private_network", ip: "172.28.128.30"
     haproxy_node.vm.hostname = "haproxy.local"
+    haproxy_node.vm.synced_folder "~/docker/support-tools", "/support-tools"
     haproxy_node.hostsupdater.aliases = ["ucp.local", "dtr.local"]
     haproxy_node.landrush.enabled = true
     haproxy_node.landrush.tld = 'local'
@@ -56,6 +57,7 @@ Vagrant.configure(2) do |config|
     ubuntu_ucp_node1.landrush.tld = 'local'
     ubuntu_ucp_node1.vm.hostname = "ucp-node1.local"
     ubuntu_ucp_node1.landrush.enabled = true
+    ubuntu_ucp_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_ucp_node1.vm.provision "shell", inline: <<-SHELL
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -140,6 +142,7 @@ Vagrant.configure(2) do |config|
     ubuntu_dtr_node1.landrush.tld = 'local'
     ubuntu_dtr_node1.vm.hostname = "dtr-node1.local"
     ubuntu_dtr_node1.landrush.enabled = true
+    ubuntu_dtr_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_dtr_node1.vm.provision "shell", inline: <<-SHELL
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -174,6 +177,7 @@ Vagrant.configure(2) do |config|
     ubuntu_worker_node1.landrush.tld = 'local'
     ubuntu_worker_node1.vm.hostname = "worker-node1.local"
     ubuntu_worker_node1.landrush.enabled = true
+    ubuntu_worker_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node1.vm.provision "shell", inline: <<-SHELL
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -200,6 +204,7 @@ Vagrant.configure(2) do |config|
     ubuntu_worker_node2.landrush.tld = 'local'
     ubuntu_worker_node2.vm.hostname = "worker-node2.local"
     ubuntu_worker_node2.landrush.enabled = true
+    ubuntu_worker_node2.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node2.vm.provision "shell", inline: <<-SHELL
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -227,6 +232,7 @@ Vagrant.configure(2) do |config|
     ubuntu_worker_node3.landrush.tld = 'local'
     ubuntu_worker_node3.vm.hostname = "worker-node3.local"
     ubuntu_worker_node3.landrush.enabled = true
+    ubuntu_worker_node3.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node3.vm.provision "shell", inline: <<-SHELL
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
