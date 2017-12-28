@@ -1,11 +1,23 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'libvirt'
 
 Vagrant.configure(2) do |config|
+  config.vm.provider :libvirt do |l|
+    l.username = "vagrant"
+    l.password = 'vagrant'
+    l.connect_via_ssh = true
+    l.driver = "kvm"
+    l.uri = 'qemu+unix:///system'
+    l.id_ssh_key_file = "$HOME/.ssh/vagrant"
+    l.storage_pool_name = "ubuntu-swarm"
+  end
   config.vm.provider :virtualbox do |v|
     # Set the timesync threshold to 10 seconds, instead of the default 20 minutes.
     v.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000]
   end
+
+  # don't remove entries from /etc/hosts on suspend
   config.hostsupdater.remove_on_suspend = false
 
   # Docker EE node for ubuntu 7.3
@@ -15,19 +27,27 @@ Vagrant.configure(2) do |config|
        vb.customize ["modifyvm", :id, "--cpus", "1"]
        vb.name = "ubuntu-haproxy-node"
     end
-    haproxy_node.vm.box = "ubuntu/xenial64"
-    haproxy_node.vm.network "private_network", ip: "172.28.128.30"
-    haproxy_node.vm.hostname = "haproxy.local"
+    config.vm.provider :libvirt do |domain|
+      domain.memory = "1024"
+      domain.cpus = 1
+      domain.host = "haproxy"
+    end
+    config.ssh.insert_key = false
+    haproxy_node.vm.box = "ubuntu1604-libvirt"
+    haproxy_node.vm.network "private_network",
+      :ip                   => "172.28.2.30",
+      :libvirt__domain_name => "landrush"
+    haproxy_node.vm.hostname = "haproxy.landrush"
     haproxy_node.vm.synced_folder "~/docker/support-tools", "/support-tools"
-    haproxy_node.hostsupdater.aliases = ["ucp.local", "dtr.local"]
+    haproxy_node.hostsupdater.aliases = ["ucp.landrush", "dtr.landrush"]
     haproxy_node.landrush.enabled = true
-    haproxy_node.landrush.tld = 'local'
-    haproxy_node.landrush.host 'dtr.local', '172.28.128.30'
-    haproxy_node.landrush.host 'ucp.local', '172.28.128.30'
-    haproxy_node.landrush.host 'wordpress.local', '172.28.128.31'
-    haproxy_node.landrush.host 'jenkins.local', '172.28.128.31'
-    haproxy_node.landrush.host 'nodeapp.local', '172.28.128.31'
-    haproxy_node.landrush.host 'visualizer.local', '172.28.128.31'
+    haproxy_node.landrush.tld = 'landrush'
+    haproxy_node.landrush.host 'dtr.landrush', '172.28.2.30'
+    haproxy_node.landrush.host 'ucp.landrush', '172.28.2.30'
+    haproxy_node.landrush.host 'wordpress.landrush', '172.28.2.31'
+    haproxy_node.landrush.host 'jenkins.landrush', '172.28.2.31'
+    haproxy_node.landrush.host 'nodeapp.landrush', '172.28.2.31'
+    haproxy_node.landrush.host 'visualizer.landrush', '172.28.2.31'
     haproxy_node.vm.provision "shell", inline: <<-SHELL
      sudo apt-get update
      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -52,10 +72,10 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-ucp-node1"
     end
-    ubuntu_ucp_node1.vm.box = "ubuntu/xenial64"
-    ubuntu_ucp_node1.vm.network "private_network", ip: "172.28.128.31"
-    ubuntu_ucp_node1.landrush.tld = 'local'
-    ubuntu_ucp_node1.vm.hostname = "ucp-node1.local"
+    ubuntu_ucp_node1.vm.box = "ubuntu1604-libvirt"
+    ubuntu_ucp_node1.vm.network "private_network", ip: "172.28.2.31"
+    ubuntu_ucp_node1.landrush.tld = 'landrush'
+    ubuntu_ucp_node1.vm.hostname = "ucp-node1.landrush"
     ubuntu_ucp_node1.landrush.enabled = true
     ubuntu_ucp_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_ucp_node1.vm.provision "shell", inline: <<-SHELL
@@ -85,10 +105,10 @@ Vagrant.configure(2) do |config|
   #     vb.customize ["modifyvm", :id, "--cpus", "2"]
   #     vb.name = "ubuntu-ucp-node2"
   #   end
-  #   ubuntu_ucp_node2.vm.box = "ubuntu/xenial64"
-  #   ubuntu_ucp_node2.vm.network "private_network", ip: "172.28.128.32"
-  #   ubuntu_ucp_node2.landrush.tld = 'local'
-  #   ubuntu_ucp_node2.vm.hostname = "ucp-node2.local"
+  #   ubuntu_ucp_node2.vm.box = "ubuntu1604-libvirt"
+  #   ubuntu_ucp_node2.vm.network "private_network", ip: "172.28.2.32"
+  #   ubuntu_ucp_node2.landrush.tld = 'landrush'
+  #   ubuntu_ucp_node2.vm.hostname = "ucp-node2.landrush"
   #   ubuntu_ucp_node2.landrush.enabled = true
   #   ubuntu_ucp_node2.vm.provision "shell", inline: <<-SHELL
   #     sudo apt-get update
@@ -111,10 +131,10 @@ Vagrant.configure(2) do |config|
   #     vb.customize ["modifyvm", :id, "--cpus", "2"]
   #     vb.name = "ubuntu-ucp-node3"
   #   end
-  #   ubuntu_ucp_node3.vm.box = "ubuntu/xenial64"
-  #   ubuntu_ucp_node3.vm.network "private_network", ip: "172.28.128.33"
-  #   ubuntu_ucp_node3.landrush.tld = 'local'
-  #   ubuntu_ucp_node3.vm.hostname = "ucp-node3.local"
+  #   ubuntu_ucp_node3.vm.box = "ubuntu1604-libvirt"
+  #   ubuntu_ucp_node3.vm.network "private_network", ip: "172.28.2.33"
+  #   ubuntu_ucp_node3.landrush.tld = 'landrush'
+  #   ubuntu_ucp_node3.vm.hostname = "ucp-node3.landrush"
   #   ubuntu_ucp_node3.landrush.enabled = true
   #   ubuntu_ucp_node3.vm.provision "shell", inline: <<-SHELL
   #     sudo apt-get update
@@ -137,10 +157,10 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-dtr-node1"
     end
-    ubuntu_dtr_node1.vm.box = "ubuntu/xenial64"
-    ubuntu_dtr_node1.vm.network "private_network", ip: "172.28.128.34"
-    ubuntu_dtr_node1.landrush.tld = 'local'
-    ubuntu_dtr_node1.vm.hostname = "dtr-node1.local"
+    ubuntu_dtr_node1.vm.box = "ubuntu1604-libvirt"
+    ubuntu_dtr_node1.vm.network "private_network", ip: "172.28.2.34"
+    ubuntu_dtr_node1.landrush.tld = 'landrush'
+    ubuntu_dtr_node1.vm.hostname = "dtr-node1.landrush"
     ubuntu_dtr_node1.landrush.enabled = true
     ubuntu_dtr_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_dtr_node1.vm.provision "shell", inline: <<-SHELL
@@ -172,10 +192,10 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node1"
     end
-    ubuntu_worker_node1.vm.box = "ubuntu/xenial64"
-    ubuntu_worker_node1.vm.network "private_network", ip: "172.28.128.35"
-    ubuntu_worker_node1.landrush.tld = 'local'
-    ubuntu_worker_node1.vm.hostname = "worker-node1.local"
+    ubuntu_worker_node1.vm.box = "ubuntu1604-libvirt"
+    ubuntu_worker_node1.vm.network "private_network", ip: "172.28.2.35"
+    ubuntu_worker_node1.landrush.tld = 'landrush'
+    ubuntu_worker_node1.vm.hostname = "worker-node1.landrush"
     ubuntu_worker_node1.landrush.enabled = true
     ubuntu_worker_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node1.vm.provision "shell", inline: <<-SHELL
@@ -199,10 +219,10 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node2"
     end
-    ubuntu_worker_node2.vm.box = "ubuntu/xenial64"
-    ubuntu_worker_node2.vm.network "private_network", ip: "172.28.128.36"
-    ubuntu_worker_node2.landrush.tld = 'local'
-    ubuntu_worker_node2.vm.hostname = "worker-node2.local"
+    ubuntu_worker_node2.vm.box = "ubuntu1604-libvirt"
+    ubuntu_worker_node2.vm.network "private_network", ip: "172.28.2.36"
+    ubuntu_worker_node2.landrush.tld = 'landrush'
+    ubuntu_worker_node2.vm.hostname = "worker-node2.landrush"
     ubuntu_worker_node2.landrush.enabled = true
     ubuntu_worker_node2.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node2.vm.provision "shell", inline: <<-SHELL
@@ -227,10 +247,10 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node3"
     end
-    ubuntu_worker_node3.vm.box = "ubuntu/xenial64"
-    ubuntu_worker_node3.vm.network "private_network", ip: "172.28.128.39"
-    ubuntu_worker_node3.landrush.tld = 'local'
-    ubuntu_worker_node3.vm.hostname = "worker-node3.local"
+    ubuntu_worker_node3.vm.box = "ubuntu1604-libvirt"
+    ubuntu_worker_node3.vm.network "private_network", ip: "172.28.2.39"
+    ubuntu_worker_node3.landrush.tld = 'landrush'
+    ubuntu_worker_node3.vm.hostname = "worker-node3.landrush"
     ubuntu_worker_node3.landrush.enabled = true
     ubuntu_worker_node3.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node3.vm.provision "shell", inline: <<-SHELL
