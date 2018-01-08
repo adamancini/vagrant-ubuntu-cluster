@@ -3,13 +3,15 @@
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'libvirt'
 
 Vagrant.configure(2) do |config|
+
+  ### Environment Settings
   config.vm.provider :libvirt do |l|
-    l.username = "vagrant"
-    l.password = 'vagrant'
-    l.connect_via_ssh = true
+    # l.username = "vagrant"
+    # l.password = 'vagrant'
+    # l.connect_via_ssh = true
     l.driver = "kvm"
     l.uri = 'qemu+unix:///system'
-    l.id_ssh_key_file = "$HOME/.ssh/vagrant"
+    # l.id_ssh_key_file = "/home/ada/.ssh/vagrant"
     l.storage_pool_name = "ubuntu-swarm"
   end
   config.vm.provider :virtualbox do |v|
@@ -19,6 +21,24 @@ Vagrant.configure(2) do |config|
 
   # don't remove entries from /etc/hosts on suspend
   config.hostsupdater.remove_on_suspend = false
+  config.landrush.guest_redirect_dns = false
+  config.vm.synced_folder ".", "/vagrant",
+    type: "nfs",
+    nfs_version: '3',
+    nfs_udp: false,
+    linux__nfs_options: ['rw','no_subtree_check','all_squash','async','insecure']
+  config.vm.synced_folder "~/docker/support-tools", "/support-tools",
+    type: 'nfs',
+    nfs_version: '3',
+    nfs_udp: false,
+    linux__nfs_options: ['rw','no_subtree_check','all_squash','async','insecure']
+  config.landrush.enabled = true
+  config.landrush.tld = 'landrush'
+  config.landrush.host 'dtr.landrush', '172.28.2.30'
+  config.landrush.host 'ucp.landrush', '172.28.2.30'
+
+
+  ### Virtual Machine definitions
 
   # Docker EE node for ubuntu 7.3
   config.vm.define "haproxy" do |haproxy_node|
@@ -33,35 +53,25 @@ Vagrant.configure(2) do |config|
       domain.host = "haproxy"
     end
     config.ssh.insert_key = false
-    haproxy_node.vm.box = "ubuntu1604-libvirt"
-    haproxy_node.vm.network "private_network",
-      :ip                   => "172.28.2.30",
-      :libvirt__domain_name => "landrush"
+    haproxy_node.vm.box = "yk0/ubuntu-xenial"
+    haproxy_node.vm.network "private_network", :ip => "172.28.2.30"
     haproxy_node.vm.hostname = "haproxy.landrush"
-    haproxy_node.vm.synced_folder "~/docker/support-tools", "/support-tools"
     haproxy_node.hostsupdater.aliases = ["ucp.landrush", "dtr.landrush"]
-    haproxy_node.landrush.enabled = true
-    haproxy_node.landrush.tld = 'landrush'
-    haproxy_node.landrush.host 'dtr.landrush', '172.28.2.30'
-    haproxy_node.landrush.host 'ucp.landrush', '172.28.2.30'
-    haproxy_node.landrush.host 'wordpress.landrush', '172.28.2.31'
-    haproxy_node.landrush.host 'jenkins.landrush', '172.28.2.31'
-    haproxy_node.landrush.host 'nodeapp.landrush', '172.28.2.31'
-    haproxy_node.landrush.host 'visualizer.landrush', '172.28.2.31'
     haproxy_node.vm.provision "shell", inline: <<-SHELL
-     sudo apt-get update
-     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-     sudo ntpdate -s time.nist.gov
-     sudo apt-get install -y software-properties-common
-     sudo add-apt-repository ppa:vbernat/haproxy-1.7
-     sudo apt-get update
-     sudo apt-get install -y haproxy
-     ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/haproxy-node
-     sudo sed -i '/module(load="imudp")/s/^#//g' /etc/rsyslog.conf
-     sudo sed -i '/input(type="imudp" port="514")/s/^#//g' /etc/rsyslog.conf
-     sudo service rsyslog restart
-     sudo cp /vagrant/files/haproxy.cfg /etc/haproxy/haproxy.cfg
-     sudo service haproxy restart
+      export DEBIAN_FRONTEND=noninteractive
+      sudo apt-get update
+      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+      sudo ntpdate -s time.nist.gov
+      sudo apt-get install -y software-properties-common
+      sudo add-apt-repository ppa:vbernat/haproxy-1.7
+      sudo apt-get update
+      sudo apt-get install -y haproxy
+      # ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/haproxy-node
+      sudo sed -i '/module(load="imudp")/s/^#//g' /etc/rsyslog.conf
+      sudo sed -i '/input(type="imudp" port="514")/s/^#//g' /etc/rsyslog.conf
+      sudo service rsyslog restart
+      sudo cp /vagrant/files/haproxy.cfg /etc/haproxy/haproxy.cfg
+      sudo service haproxy restart
     SHELL
   end
 
@@ -72,13 +82,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-ucp-node1"
     end
-    ubuntu_ucp_node1.vm.box = "ubuntu1604-libvirt"
+    ubuntu_ucp_node1.vm.box = "yk0/ubuntu-xenial"
     ubuntu_ucp_node1.vm.network "private_network", ip: "172.28.2.31"
-    ubuntu_ucp_node1.landrush.tld = 'landrush'
     ubuntu_ucp_node1.vm.hostname = "ucp-node1.landrush"
-    ubuntu_ucp_node1.landrush.enabled = true
-    ubuntu_ucp_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_ucp_node1.vm.provision "shell", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
       sudo ntpdate -s time.nist.gov
@@ -105,9 +113,9 @@ Vagrant.configure(2) do |config|
   #     vb.customize ["modifyvm", :id, "--cpus", "2"]
   #     vb.name = "ubuntu-ucp-node2"
   #   end
-  #   ubuntu_ucp_node2.vm.box = "ubuntu1604-libvirt"
+  #   ubuntu_ucp_node2.vm.box = "yk0/ubuntu-xenial"
   #   ubuntu_ucp_node2.vm.network "private_network", ip: "172.28.2.32"
-  #   ubuntu_ucp_node2.landrush.tld = 'landrush'
+
   #   ubuntu_ucp_node2.vm.hostname = "ucp-node2.landrush"
   #   ubuntu_ucp_node2.landrush.enabled = true
   #   ubuntu_ucp_node2.vm.provision "shell", inline: <<-SHELL
@@ -131,9 +139,9 @@ Vagrant.configure(2) do |config|
   #     vb.customize ["modifyvm", :id, "--cpus", "2"]
   #     vb.name = "ubuntu-ucp-node3"
   #   end
-  #   ubuntu_ucp_node3.vm.box = "ubuntu1604-libvirt"
+  #   ubuntu_ucp_node3.vm.box = "yk0/ubuntu-xenial"
   #   ubuntu_ucp_node3.vm.network "private_network", ip: "172.28.2.33"
-  #   ubuntu_ucp_node3.landrush.tld = 'landrush'
+
   #   ubuntu_ucp_node3.vm.hostname = "ucp-node3.landrush"
   #   ubuntu_ucp_node3.landrush.enabled = true
   #   ubuntu_ucp_node3.vm.provision "shell", inline: <<-SHELL
@@ -157,13 +165,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-dtr-node1"
     end
-    ubuntu_dtr_node1.vm.box = "ubuntu1604-libvirt"
+    ubuntu_dtr_node1.vm.box = "yk0/ubuntu-xenial"
     ubuntu_dtr_node1.vm.network "private_network", ip: "172.28.2.34"
-    ubuntu_dtr_node1.landrush.tld = 'landrush'
     ubuntu_dtr_node1.vm.hostname = "dtr-node1.landrush"
-    ubuntu_dtr_node1.landrush.enabled = true
-    ubuntu_dtr_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_dtr_node1.vm.provision "shell", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
       sudo ntpdate -s time.nist.gov
@@ -192,13 +198,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node1"
     end
-    ubuntu_worker_node1.vm.box = "ubuntu1604-libvirt"
+    ubuntu_worker_node1.vm.box = "yk0/ubuntu-xenial"
     ubuntu_worker_node1.vm.network "private_network", ip: "172.28.2.35"
-    ubuntu_worker_node1.landrush.tld = 'landrush'
     ubuntu_worker_node1.vm.hostname = "worker-node1.landrush"
-    ubuntu_worker_node1.landrush.enabled = true
-    ubuntu_worker_node1.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node1.vm.provision "shell", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
       sudo ntpdate -s time.nist.gov
@@ -219,13 +223,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node2"
     end
-    ubuntu_worker_node2.vm.box = "ubuntu1604-libvirt"
+    ubuntu_worker_node2.vm.box = "yk0/ubuntu-xenial"
     ubuntu_worker_node2.vm.network "private_network", ip: "172.28.2.36"
-    ubuntu_worker_node2.landrush.tld = 'landrush'
     ubuntu_worker_node2.vm.hostname = "worker-node2.landrush"
-    ubuntu_worker_node2.landrush.enabled = true
-    ubuntu_worker_node2.vm.synced_folder "~/docker/support-tools", "/support-tools"
     ubuntu_worker_node2.vm.provision "shell", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
       sudo ntpdate -s time.nist.gov
@@ -241,30 +243,28 @@ Vagrant.configure(2) do |config|
   end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "worker-node3" do |ubuntu_worker_node3|
-    config.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "1500"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.name = "ubuntu-worker-node3"
-    end
-    ubuntu_worker_node3.vm.box = "ubuntu1604-libvirt"
-    ubuntu_worker_node3.vm.network "private_network", ip: "172.28.2.39"
-    ubuntu_worker_node3.landrush.tld = 'landrush'
-    ubuntu_worker_node3.vm.hostname = "worker-node3.landrush"
-    ubuntu_worker_node3.landrush.enabled = true
-    ubuntu_worker_node3.vm.synced_folder "~/docker/support-tools", "/support-tools"
-    ubuntu_worker_node3.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_worker.sh .
-      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_worker.sh
-      sleep 5
-      # ./install_ee.sh
-      # ./join_worker.sh
-   SHELL
-  end
+  # config.vm.define "worker-node3" do |ubuntu_worker_node3|
+  #   config.vm.provider :virtualbox do |vb|
+  #     vb.customize ["modifyvm", :id, "--memory", "1500"]
+  #     vb.customize ["modifyvm", :id, "--cpus", "2"]
+  #     vb.name = "ubuntu-worker-node3"
+  #   end
+  #   ubuntu_worker_node3.vm.box = "yk0/ubuntu-xenial"
+  #   ubuntu_worker_node3.vm.network "private_network", ip: "172.28.2.39"
+  #   ubuntu_worker_node3.vm.hostname = "worker-node3.landrush"
+  #   ubuntu_worker_node3.vm.provision "shell", inline: <<-SHELL
+  #     export DEBIAN_FRONTEND=noninteractive
+  #     sudo apt-get update
+  #     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+  #     sudo ntpdate -s time.nist.gov
+  #     sudo cp /vagrant/scripts/install_ee.sh .
+  #     sudo cp /vagrant/scripts/join_worker.sh .
+  #     sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
+  #     sudo chmod +x install_ee.sh
+  #     sudo chmod +x join_worker.sh
+  #     sleep 5
+  #     # ./install_ee.sh
+  #     # ./join_worker.sh
+  #  SHELL
+  # end
 end
