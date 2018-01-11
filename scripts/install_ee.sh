@@ -8,15 +8,15 @@ sudo apt-get update
 sudo apt-get -y --allow-unauthenticated install docker-ee
 sudo usermod -aG docker vagrant
 
-# Configure dns for Docker
-sudo sh -c "echo '{
-  \"dns\":  [\"172.17.0.1\"]
-}' >> /etc/docker/daemon.json"
-sudo systemctl daemon-reload
-sudo systemctl restart docker
+# # Configure dns for Docker
+# sudo sh -c "echo '{
+#   \"dns\":  [\"172.17.0.1\"]
+# }' >> /etc/docker/daemon.json"
+# sudo systemctl daemon-reload
+# sudo systemctl restart docker
 
-# Additional step for dnsmasq on localhost
-sudo apt-get -y install dnsmasq
-sudo sh -c "echo 'interface=vboxnet1
-listen-address=172.17.0.1' >> /etc/dnsmasq.d/docker-bridge.conf"
-sudo systemctl restart dnsmasq
+# # Additional step for dnsmasq on localhost
+# sudo apt-get -y install dnsmasq
+# sudo sh -c "echo 'interface=vboxnet1
+# listen-address=172.17.0.1' >> /etc/dnsmasq.d/docker-bridge.conf"
+# sudo systemctl restart dnsmasq
