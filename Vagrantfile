@@ -42,23 +42,22 @@ Vagrant.configure(2) do |config|
   ### Virtual Machine definitions
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "haproxy" do |haproxy_node|
-    config.vm.provider :virtualbox do |vb|
+  config.vm.define "haproxy" do |node|
+    node.vm.provider :virtualbox do |vb|
        vb.customize ["modifyvm", :id, "--memory", "1024"]
        vb.customize ["modifyvm", :id, "--cpus", "1"]
        vb.name = "ubuntu-haproxy-node"
     end
-    config.vm.provider :libvirt do |domain|
+    node.vm.provider :libvirt do |domain|
       domain.memory = "1024"
       domain.cpus = 1
       domain.host = "haproxy"
     end
-    config.ssh.insert_key = false
-    haproxy_node.vm.box = "yk0/ubuntu-xenial"
-    haproxy_node.vm.network "private_network", :ip => "172.28.2.30"
-    haproxy_node.vm.hostname = "haproxy.landrush"
-    haproxy_node.hostsupdater.aliases = ["ucp.landrush", "dtr.landrush"]
-    haproxy_node.vm.provision "shell", inline: <<-SHELL
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", :ip => "172.28.2.30"
+    node.vm.hostname = "haproxy.landrush"
+    node.hostsupdater.aliases = ["ucp.landrush", "dtr.landrush"]
+    node.vm.provision "shell", inline: <<-SHELL
       export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -77,21 +76,21 @@ Vagrant.configure(2) do |config|
   end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "ucp-node1" do |ubuntu_ucp_node1|
-    config.vm.provider :virtualbox do |vb|
+  config.vm.define "ucp-node1" do |node|
+    node.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "2048"]
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-ucp-node1"
     end
-    config.vm.provider :libvirt do |domain|
+    node.vm.provider :libvirt do |domain|
       domain.memory = "2048"
       domain.cpus = 2
       domain.host = "ucp-node1"
     end
-    ubuntu_ucp_node1.vm.box = "yk0/ubuntu-xenial"
-    ubuntu_ucp_node1.vm.network "private_network", ip: "172.28.2.31"
-    ubuntu_ucp_node1.vm.hostname = "ucp-node1.landrush"
-    ubuntu_ucp_node1.vm.provision "shell", inline: <<-SHELL
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", ip: "172.28.2.31"
+    node.vm.hostname = "ucp-node1.landrush"
+    node.vm.provision "shell", inline: <<-SHELL
       export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -113,7 +112,7 @@ Vagrant.configure(2) do |config|
   end
 
   # # Docker EE node for ubuntu 7.3
-  # config.vm.define "ucp-node2" do |ubuntu_ucp_node2|
+  # config.vm.define "ucp-node2" do |node2|
   #   config.vm.provider :virtualbox do |vb|
   #     vb.customize ["modifyvm", :id, "--memory", "2048"]
   #     vb.customize ["modifyvm", :id, "--cpus", "2"]
@@ -165,21 +164,21 @@ Vagrant.configure(2) do |config|
   # end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "dtr-node1" do |ubuntu_dtr_node1|
-    config.vm.provider :virtualbox do |vb|
+  config.vm.define "dtr-node1" do |node|
+    node.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "1024"]
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-dtr-node1"
     end
-    config.vm.provider :libvirt do |domain|
+    node.vm.provider :libvirt do |domain|
       domain.memory = "2048"
       domain.cpus = 2
       domain.host = "dtr-node1"
     end
-    ubuntu_dtr_node1.vm.box = "yk0/ubuntu-xenial"
-    ubuntu_dtr_node1.vm.network "private_network", ip: "172.28.2.34"
-    ubuntu_dtr_node1.vm.hostname = "dtr-node1.landrush"
-    ubuntu_dtr_node1.vm.provision "shell", inline: <<-SHELL
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", ip: "172.28.2.34"
+    node.vm.hostname = "dtr-node1.landrush"
+    node.vm.provision "shell", inline: <<-SHELL
       export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -203,21 +202,21 @@ Vagrant.configure(2) do |config|
   end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "worker-node1" do |ubuntu_worker_node1|
-    config.vm.provider :virtualbox do |vb|
+  config.vm.define "worker-node1" do |node|
+    node.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "1500"]
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node1"
     end
-    config.vm.provider :libvirt do |domain|
+    node.vm.provider :libvirt do |domain|
       domain.memory = "1500"
       domain.cpus = 1
       domain.host = "worker-node1"
     end
-    ubuntu_worker_node1.vm.box = "yk0/ubuntu-xenial"
-    ubuntu_worker_node1.vm.network "private_network", ip: "172.28.2.35"
-    ubuntu_worker_node1.vm.hostname = "worker-node1.landrush"
-    ubuntu_worker_node1.vm.provision "shell", inline: <<-SHELL
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", ip: "172.28.2.35"
+    node.vm.hostname = "worker-node1.landrush"
+    node.vm.provision "shell", inline: <<-SHELL
       export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -233,21 +232,21 @@ Vagrant.configure(2) do |config|
   end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "worker-node2" do |ubuntu_worker_node2|
-    config.vm.provider :virtualbox do |vb|
+  config.vm.define "worker-node2" do |node|
+    node.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "1500"]
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node2"
     end
-    config.vm.provider :libvirt do |domain|
+    node.vm.provider :libvirt do |domain|
       domain.memory = "1500"
       domain.cpus = 1
       domain.host = "worker-node2"
     end
-    ubuntu_worker_node2.vm.box = "yk0/ubuntu-xenial"
-    ubuntu_worker_node2.vm.network "private_network", ip: "172.28.2.36"
-    ubuntu_worker_node2.vm.hostname = "worker-node2.landrush"
-    ubuntu_worker_node2.vm.provision "shell", inline: <<-SHELL
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", ip: "172.28.2.36"
+    node.vm.hostname = "worker-node2.landrush"
+    node.vm.provision "shell", inline: <<-SHELL
       export DEBIAN_FRONTEND=noninteractive
       sudo apt-get update
       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
@@ -264,16 +263,16 @@ Vagrant.configure(2) do |config|
   end
 
   # Docker EE node for ubuntu 7.3
-  # config.vm.define "worker-node3" do |ubuntu_worker_node3|
+  # config.vm.define "worker-node3" do |node|
   #   config.vm.provider :virtualbox do |vb|
   #     vb.customize ["modifyvm", :id, "--memory", "1500"]
   #     vb.customize ["modifyvm", :id, "--cpus", "2"]
   #     vb.name = "ubuntu-worker-node3"
   #   end
-  #   ubuntu_worker_node3.vm.box = "yk0/ubuntu-xenial"
-  #   ubuntu_worker_node3.vm.network "private_network", ip: "172.28.2.39"
-  #   ubuntu_worker_node3.vm.hostname = "worker-node3.landrush"
-  #   ubuntu_worker_node3.vm.provision "shell", inline: <<-SHELL
+  #   node.vm.box = "yk0/ubuntu-xenial"
+  #   node.vm.network "private_network", ip: "172.28.2.39"
+  #   node.vm.hostname = "worker-node3.landrush"
+  #   node.vm.provision "shell", inline: <<-SHELL
   #     export DEBIAN_FRONTEND=noninteractive
   #     sudo apt-get update
   #     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
