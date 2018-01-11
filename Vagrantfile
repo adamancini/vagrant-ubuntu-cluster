@@ -23,11 +23,12 @@ Vagrant.configure(2) do |config|
   config.hostsupdater.remove_on_suspend = false
   config.landrush.guest_redirect_dns = false
   config.vm.synced_folder ".", "/vagrant",
-    type: "nfs",
+    type: 'nfs',
     nfs_version: '3',
     nfs_udp: false,
     linux__nfs_options: ['rw','no_subtree_check','all_squash','async','insecure']
   config.vm.synced_folder "~/docker/support-tools", "/support-tools",
+    # rsync__exclude: ".git/"
     type: 'nfs',
     nfs_version: '3',
     nfs_udp: false,
@@ -81,6 +82,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--memory", "2048"]
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-ucp-node1"
+    end
+    config.vm.provider :libvirt do |domain|
+      domain.memory = "2048"
+      domain.cpus = 2
+      domain.host = "ucp-node1"
     end
     ubuntu_ucp_node1.vm.box = "yk0/ubuntu-xenial"
     ubuntu_ucp_node1.vm.network "private_network", ip: "172.28.2.31"
@@ -165,6 +171,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-dtr-node1"
     end
+    config.vm.provider :libvirt do |domain|
+      domain.memory = "2048"
+      domain.cpus = 2
+      domain.host = "dtr-node1"
+    end
     ubuntu_dtr_node1.vm.box = "yk0/ubuntu-xenial"
     ubuntu_dtr_node1.vm.network "private_network", ip: "172.28.2.34"
     ubuntu_dtr_node1.vm.hostname = "dtr-node1.landrush"
@@ -198,6 +209,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node1"
     end
+    config.vm.provider :libvirt do |domain|
+      domain.memory = "1500"
+      domain.cpus = 1
+      domain.host = "worker-node1"
+    end
     ubuntu_worker_node1.vm.box = "yk0/ubuntu-xenial"
     ubuntu_worker_node1.vm.network "private_network", ip: "172.28.2.35"
     ubuntu_worker_node1.vm.hostname = "worker-node1.landrush"
@@ -222,6 +238,11 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--memory", "1500"]
       vb.customize ["modifyvm", :id, "--cpus", "2"]
       vb.name = "ubuntu-worker-node2"
+    end
+    config.vm.provider :libvirt do |domain|
+      domain.memory = "1500"
+      domain.cpus = 1
+      domain.host = "worker-node2"
     end
     ubuntu_worker_node2.vm.box = "yk0/ubuntu-xenial"
     ubuntu_worker_node2.vm.network "private_network", ip: "172.28.2.36"
