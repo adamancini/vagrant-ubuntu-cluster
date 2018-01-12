@@ -43,11 +43,6 @@ Vagrant.configure(2) do |config|
 
   # Docker EE node for ubuntu 7.3
   config.vm.define "haproxy" do |node|
-    node.vm.provider :virtualbox do |vb|
-       vb.customize ["modifyvm", :id, "--memory", "1024"]
-       vb.customize ["modifyvm", :id, "--cpus", "1"]
-       vb.name = "ubuntu-haproxy-node"
-    end
     node.vm.provider :libvirt do |domain|
       domain.memory = "1024"
       domain.cpus = 1
@@ -77,11 +72,6 @@ Vagrant.configure(2) do |config|
 
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-node1" do |node|
-    node.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.name = "ubuntu-ucp-node1"
-    end
     node.vm.provider :libvirt do |domain|
       domain.memory = "2048"
       domain.cpus = 2
@@ -98,78 +88,64 @@ Vagrant.configure(2) do |config|
       sudo cp /vagrant/scripts/install_ee.sh .
       sudo cp /vagrant/scripts/install_ucp.sh .
       sudo cp /vagrant/scripts/create_tokens.sh .
-      sudo cp /vagrant/scripts/visualizer.sh .
-      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
       sudo chmod +x install_ee.sh
       sudo chmod +x install_ucp.sh
       sudo chmod +x create_tokens.sh
-      sudo chmod +x visualizer.sh
       ./install_ee.sh
       ./install_ucp.sh
       ./create_tokens.sh
-      # ./visualizer.sh
    SHELL
   end
 
-  # # Docker EE node for ubuntu 7.3
-  # config.vm.define "ucp-node2" do |node2|
-  #   config.vm.provider :virtualbox do |vb|
-  #     vb.customize ["modifyvm", :id, "--memory", "2048"]
-  #     vb.customize ["modifyvm", :id, "--cpus", "2"]
-  #     vb.name = "ubuntu-ucp-node2"
-  #   end
-  #   ubuntu_ucp_node2.vm.box = "yk0/ubuntu-xenial"
-  #   ubuntu_ucp_node2.vm.network "private_network", ip: "172.28.2.32"
-
-  #   ubuntu_ucp_node2.vm.hostname = "ucp-node2.landrush"
-  #   ubuntu_ucp_node2.landrush.enabled = true
-  #   ubuntu_ucp_node2.vm.provision "shell", inline: <<-SHELL
-  #     sudo apt-get update
-  #     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-  #     sudo ntpdate -s time.nist.gov
-  #     sudo cp /vagrant/scripts/install_ee.sh .
-  #     sudo cp /vagrant/scripts/join_manager.sh .
-  #     sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
-  #     sudo chmod +x install_ee.sh
-  #     sudo chmod +x join_manager.sh
-  #     ./install_ee.sh
-  #     ./join_manager.sh
-  #   SHELL
-  # end
-
-  # # Docker EE node for ubuntu 7.3
-  # config.vm.define "ucp-node3" do |ubuntu_ucp_node3|
-  #   config.vm.provider :virtualbox do |vb|
-  #     vb.customize ["modifyvm", :id, "--memory", "2048"]
-  #     vb.customize ["modifyvm", :id, "--cpus", "2"]
-  #     vb.name = "ubuntu-ucp-node3"
-  #   end
-  #   ubuntu_ucp_node3.vm.box = "yk0/ubuntu-xenial"
-  #   ubuntu_ucp_node3.vm.network "private_network", ip: "172.28.2.33"
-
-  #   ubuntu_ucp_node3.vm.hostname = "ucp-node3.landrush"
-  #   ubuntu_ucp_node3.landrush.enabled = true
-  #   ubuntu_ucp_node3.vm.provision "shell", inline: <<-SHELL
-  #     sudo apt-get update
-  #     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-  #     sudo ntpdate -s time.nist.gov
-  #     sudo cp /vagrant/scripts/install_ee.sh .
-  #     sudo cp /vagrant/scripts/join_manager.sh .
-  #     sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
-  #     sudo chmod +x install_ee.sh
-  #     sudo chmod +x join_manager.sh
-  #     ./install_ee.sh
-  #     ./join_manager.sh
-  #  SHELL
-  # end
+  # Docker EE node for ubuntu 7.3
+  config.vm.define "ucp-node2" do |node|
+    node.vm.provider :libvirt do |domain|
+      domain.memory = "2048"
+      domain.cpus = 2
+      domain.host = "ucp-node2"
+    end
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", ip: "172.28.2.32"
+    node.vm.hostname = "ucp-node2.landrush"
+    node.landrush.enabled = true
+    node.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+      sudo ntpdate -s time.nist.gov
+      sudo cp /vagrant/scripts/install_ee.sh .
+      sudo cp /vagrant/scripts/join_manager.sh .
+      sudo chmod +x install_ee.sh
+      sudo chmod +x join_manager.sh
+      ./install_ee.sh
+      ./join_manager.sh
+    SHELL
+  end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "dtr-node1" do |node|
-    node.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "1024"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.name = "ubuntu-dtr-node1"
+  config.vm.define "ucp-node3" do |node|
+    node.vm.provider :libvirt do |domain|
+      domain.memory = "2048"
+      domain.cpus = 2
+      domain.host = "ucp-node3"
     end
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", ip: "172.28.2.33"
+    node.vm.hostname = "ucp-node3.landrush"
+    node.landrush.enabled = true
+    node.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+      sudo ntpdate -s time.nist.gov
+      sudo cp /vagrant/scripts/install_ee.sh .
+      sudo cp /vagrant/scripts/join_manager.sh .
+      sudo chmod +x install_ee.sh
+      sudo chmod +x join_manager.sh
+      ./install_ee.sh
+      ./join_manager.sh
+   SHELL
+  end
+
+  config.vm.define "dtr-node1" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "2048"
       domain.cpus = 2
@@ -186,28 +162,16 @@ Vagrant.configure(2) do |config|
       sudo cp /vagrant/scripts/install_ee.sh .
       sudo cp /vagrant/scripts/join_worker.sh .
       sudo cp /vagrant/scripts/install_dtr.sh .
-      sudo cp /vagrant/scripts/prepopulate_dtr.sh .
-      sudo cp /vagrant/scripts/backup_dtr.sh .
-      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
-      sudo cp /vagrant/files/dtr-2.2.5.tar.gz
       sudo chmod +x install_ee.sh
       sudo chmod +x join_worker.sh
       sudo chmod +x install_dtr.sh
-      sudo chmod +x prepopulate_dtr.sh
-      sudo chmod +x backup_dtr.sh
       ./install_ee.sh
       ./join_worker.sh
       ./install_dtr.sh
     SHELL
   end
 
-  # Docker EE node for ubuntu 7.3
   config.vm.define "worker-node1" do |node|
-    node.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "1500"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.name = "ubuntu-worker-node1"
-    end
     node.vm.provider :libvirt do |domain|
       domain.memory = "1500"
       domain.cpus = 1
@@ -223,7 +187,6 @@ Vagrant.configure(2) do |config|
       sudo ntpdate -s time.nist.gov
       sudo cp /vagrant/scripts/install_ee.sh .
       sudo cp /vagrant/scripts/join_worker.sh .
-      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
       sudo chmod +x install_ee.sh
       sudo chmod +x join_worker.sh
       ./install_ee.sh
@@ -231,13 +194,7 @@ Vagrant.configure(2) do |config|
    SHELL
   end
 
-  # Docker EE node for ubuntu 7.3
   config.vm.define "worker-node2" do |node|
-    node.vm.provider :virtualbox do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "1500"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.name = "ubuntu-worker-node2"
-    end
     node.vm.provider :libvirt do |domain|
       domain.memory = "1500"
       domain.cpus = 1
@@ -253,7 +210,6 @@ Vagrant.configure(2) do |config|
       sudo ntpdate -s time.nist.gov
       sudo cp /vagrant/scripts/install_ee.sh .
       sudo cp /vagrant/scripts/join_worker.sh .
-      sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
       sudo chmod +x install_ee.sh
       sudo chmod +x join_worker.sh
       sleep 5
@@ -262,29 +218,27 @@ Vagrant.configure(2) do |config|
    SHELL
   end
 
-  # Docker EE node for ubuntu 7.3
-  # config.vm.define "worker-node3" do |node|
-  #   config.vm.provider :virtualbox do |vb|
-  #     vb.customize ["modifyvm", :id, "--memory", "1500"]
-  #     vb.customize ["modifyvm", :id, "--cpus", "2"]
-  #     vb.name = "ubuntu-worker-node3"
-  #   end
-  #   node.vm.box = "yk0/ubuntu-xenial"
-  #   node.vm.network "private_network", ip: "172.28.2.39"
-  #   node.vm.hostname = "worker-node3.landrush"
-  #   node.vm.provision "shell", inline: <<-SHELL
-  #     export DEBIAN_FRONTEND=noninteractive
-  #     sudo apt-get update
-  #     sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-  #     sudo ntpdate -s time.nist.gov
-  #     sudo cp /vagrant/scripts/install_ee.sh .
-  #     sudo cp /vagrant/scripts/join_worker.sh .
-  #     sudo cp /vagrant/files/ucp_images_2.1.4.tar.gz .
-  #     sudo chmod +x install_ee.sh
-  #     sudo chmod +x join_worker.sh
-  #     sleep 5
-  #     # ./install_ee.sh
-  #     # ./join_worker.sh
-  #  SHELL
-  # end
+  config.vm.define "worker-node3" do |node|
+    node.vm.provider :libvirt do |domain|
+      domain.memory = "1500"
+      domain.cpus = 1
+      domain.host = "worker-node3"
+    end
+    node.vm.box = "yk0/ubuntu-xenial"
+    node.vm.network "private_network", ip: "172.28.2.37"
+    node.vm.hostname = "worker-node3.landrush"
+    node.vm.provision "shell", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
+      sudo apt-get update
+      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+      sudo ntpdate -s time.nist.gov
+      sudo cp /vagrant/scripts/install_ee.sh .
+      sudo cp /vagrant/scripts/join_worker.sh .
+      sudo chmod +x install_ee.sh
+      sudo chmod +x join_worker.sh
+      sleep 5
+      ./install_ee.sh
+      ./join_worker.sh
+   SHELL
+  end
 end
