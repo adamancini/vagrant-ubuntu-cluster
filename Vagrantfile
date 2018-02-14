@@ -2,6 +2,7 @@
 # vi: set ft=ruby :
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'libvirt'
 
+
 Vagrant.configure(2) do |config|
 
   ### Environment Settings
@@ -27,7 +28,7 @@ Vagrant.configure(2) do |config|
     nfs_version: '3',
     nfs_udp: false,
     linux__nfs_options: ['rw','no_subtree_check','all_squash','async','insecure']
-  config.vm.synced_folder "~/docker/support-tools", "/support-tools",
+  config.vm.synced_folder "~/docker", "/docker",
     # rsync__exclude: ".git/"
     type: 'nfs',
     nfs_version: '3',
@@ -73,7 +74,7 @@ Vagrant.configure(2) do |config|
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-node1" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "2048"
+      domain.memory = "4096"
       domain.cpus = 2
       domain.host = "ucp-node1"
     end
@@ -100,7 +101,7 @@ Vagrant.configure(2) do |config|
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-node2" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "2048"
+      domain.memory = "4096"
       domain.cpus = 2
       domain.host = "ucp-node2"
     end
@@ -124,7 +125,7 @@ Vagrant.configure(2) do |config|
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-node3" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "2048"
+      domain.memory = "4096"
       domain.cpus = 2
       domain.host = "ucp-node3"
     end
@@ -147,7 +148,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "dtr-node1" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "2048"
+      domain.memory = "4096"
       domain.cpus = 2
       domain.host = "dtr-node1"
     end
@@ -173,7 +174,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "worker-node1" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "1500"
+      domain.memory = "2048"
       domain.cpus = 1
       domain.host = "worker-node1"
     end
@@ -196,7 +197,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "worker-node2" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "1500"
+      domain.memory = "2048"
       domain.cpus = 1
       domain.host = "worker-node2"
     end
@@ -220,7 +221,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "worker-node3" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "1500"
+      domain.memory = "2048"
       domain.cpus = 1
       domain.host = "worker-node3"
     end
