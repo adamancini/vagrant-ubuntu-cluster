@@ -22,7 +22,7 @@ Vagrant.configure(2) do |config|
 
   # don't remove entries from /etc/hosts on suspend
   config.hostsupdater.remove_on_suspend = false
-  config.landrush.guest_redirect_dns = false
+  config.landrush.guest_redirect_dns = true
   config.vm.synced_folder ".", "/vagrant",
     type: 'nfs',
     nfs_version: '3',
@@ -35,10 +35,21 @@ Vagrant.configure(2) do |config|
     nfs_udp: false,
     linux__nfs_options: ['rw','no_subtree_check','all_squash','async','insecure']
   config.landrush.enabled = true
-  config.landrush.tld = 'landrush'
-  config.landrush.host 'dtr.landrush', '172.28.2.30'
-  config.landrush.host 'ucp.landrush', '172.28.2.30'
+  config.landrush.tld = 'local.antiskub.net'
+  config.landrush.host 'dtr.local.antiskub.net', '172.28.2.30'
+  config.landrush.host 'ucp.local.antiskub.net', '172.28.2.30'
 
+  ## Try to automatically generate ansible host inventory by calling vm.provision without a playbook
+  config.vm.provision :ansible do |ansible|
+    ansible.verbose = "v"
+    ansible.playbook = "playbooks/apt-update.yaml"
+    ansible.groups = {
+      "managers"       => ["ucp-node1","ucp-node2","ucp-node3"],
+      "workers"        => ["worker-node1","worker-node2","worker-node3"],
+      "proxy"          => ["haproxy"],
+      "swarm:children" => ["managers","workers"]
+    }
+  end
 
   ### Virtual Machine definitions
 
@@ -51,23 +62,18 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", :ip => "172.28.2.30"
-    node.vm.hostname = "haproxy.landrush"
-    node.hostsupdater.aliases = ["ucp.landrush", "dtr.landrush"]
+    node.vm.hostname = "haproxy.local.antiskub.net"
+    node.hostsupdater.aliases = ["ucp.local.antiskub.net", "dtr.local.antiskub.net"]
     node.vm.provision "shell", inline: <<-SHELL
-      export DEBIAN_FRONTEND=noninteractive
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo apt-get install -y software-properties-common
-      sudo add-apt-repository ppa:vbernat/haproxy-1.7
-      sudo apt-get update
-      sudo apt-get install -y haproxy
+      add-apt-repository ppa:vbernat/haproxy-1.7
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate haproxy software-properties-common
+      ntpdate -s time.nist.gov
       # ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/haproxy-node
-      sudo sed -i '/module(load="imudp")/s/^#//g' /etc/rsyslog.conf
-      sudo sed -i '/input(type="imudp" port="514")/s/^#//g' /etc/rsyslog.conf
-      sudo service rsyslog restart
-      sudo cp /vagrant/files/haproxy.cfg /etc/haproxy/haproxy.cfg
-      sudo service haproxy restart
+      sed -i '/module(load="imudp")/s/^#//g' /etc/rsyslog.conf
+      sed -i '/input(type="imudp" port="514")/s/^#//g' /etc/rsyslog.conf
+      service rsyslog restart
+      cp /vagrant/files/haproxy.cfg /etc/haproxy/haproxy.cfg
+      service haproxy restart
     SHELL
   end
 
@@ -80,21 +86,13 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.31"
-    node.vm.hostname = "ucp-node1.landrush"
+    node.vm.hostname = "ucp-node1.local.antiskub.net"
     node.vm.provision "shell", inline: <<-SHELL
-      export DEBIAN_FRONTEND=noninteractive
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/install_ucp.sh .
-      sudo cp /vagrant/scripts/create_tokens.sh .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x install_ucp.sh
-      sudo chmod +x create_tokens.sh
-      ./install_ee.sh
-      ./install_ucp.sh
-      ./create_tokens.sh
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+      ntpdate -s time.nist.gov
+      /vagrant/scripts/install_ee.sh
+      /vagrant/scripts/install_ucp.sh
+      /vagrant/scripts/create_tokens.sh
    SHELL
   end
 
@@ -107,18 +105,13 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.32"
-    node.vm.hostname = "ucp-node2.landrush"
+    node.vm.hostname = "ucp-node2.local.antiskub.net"
     node.landrush.enabled = true
     node.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_manager.sh .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_manager.sh
-      ./install_ee.sh
-      ./join_manager.sh
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+      ntpdate -s time.nist.gov
+      /vagrant/scripts/install_ee.sh
+      /vagrant/scripts/join_manager.sh
     SHELL
   end
 
@@ -131,18 +124,13 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.33"
-    node.vm.hostname = "ucp-node3.landrush"
+    node.vm.hostname = "ucp-node3.local.antiskub.net"
     node.landrush.enabled = true
     node.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_manager.sh .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_manager.sh
-      ./install_ee.sh
-      ./join_manager.sh
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+      ntpdate -s time.nist.gov
+      /vagrant/scripts/install_ee.sh
+      /vagrant/scripts/join_manager.sh
    SHELL
   end
 
@@ -154,21 +142,13 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.34"
-    node.vm.hostname = "dtr-node1.landrush"
+    node.vm.hostname = "dtr-node1.local.antiskub.net"
     node.vm.provision "shell", inline: <<-SHELL
-      export DEBIAN_FRONTEND=noninteractive
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_worker.sh .
-      sudo cp /vagrant/scripts/install_dtr.sh .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_worker.sh
-      sudo chmod +x install_dtr.sh
-      ./install_ee.sh
-      ./join_worker.sh
-      ./install_dtr.sh
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+      ntpdate -s time.nist.gov
+      /vagrant/scripts/install_ee.sh
+      /vagrant/scripts/join_worker.sh
+      /vagrant/scripts/install_dtr.sh
     SHELL
   end
 
@@ -180,18 +160,12 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.35"
-    node.vm.hostname = "worker-node1.landrush"
+    node.vm.hostname = "worker-node1.local.antiskub.net"
     node.vm.provision "shell", inline: <<-SHELL
-      export DEBIAN_FRONTEND=noninteractive
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_worker.sh .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_worker.sh
-      ./install_ee.sh
-      ./join_worker.sh
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+      ntpdate -s time.nist.gov
+      /vagrant/scripts/install_ee.sh
+      /vagrant/scripts/join_worker.sh
    SHELL
   end
 
@@ -203,19 +177,13 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.36"
-    node.vm.hostname = "worker-node2.landrush"
+    node.vm.hostname = "worker-node2.local.antiskub.net"
     node.vm.provision "shell", inline: <<-SHELL
-      export DEBIAN_FRONTEND=noninteractive
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_worker.sh .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_worker.sh
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+      ntpdate -s time.nist.gov
       sleep 5
-      ./install_ee.sh
-      ./join_worker.sh
+      /vagrant/scripts/install_ee.sh
+      /vagrant/scripts/join_worker.sh
    SHELL
   end
 
@@ -227,19 +195,13 @@ Vagrant.configure(2) do |config|
     end
     node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.37"
-    node.vm.hostname = "worker-node3.landrush"
+    node.vm.hostname = "worker-node3.local.antiskub.net"
     node.vm.provision "shell", inline: <<-SHELL
-      export DEBIAN_FRONTEND=noninteractive
-      sudo apt-get update
-      sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-      sudo ntpdate -s time.nist.gov
-      sudo cp /vagrant/scripts/install_ee.sh .
-      sudo cp /vagrant/scripts/join_worker.sh .
-      sudo chmod +x install_ee.sh
-      sudo chmod +x join_worker.sh
+      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+      ntpdate -s time.nist.gov
       sleep 5
-      ./install_ee.sh
-      ./join_worker.sh
+      /vagrant/scripts/install_ee.sh
+      /vagrant/scripts/join_worker.sh
    SHELL
   end
 end
