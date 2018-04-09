@@ -23,6 +23,9 @@ Vagrant.configure(2) do |config|
   # don't remove entries from /etc/hosts on suspend
   config.hostsupdater.remove_on_suspend = false
   config.landrush.guest_redirect_dns = true
+  config.landrush.host_interface_class = :ipv4
+  config.landrush.host_interface = 'eth1'
+
   config.vm.synced_folder ".", "/vagrant",
     type: 'nfs',
     nfs_version: '3',
