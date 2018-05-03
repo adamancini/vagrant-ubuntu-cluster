@@ -1,0 +1,11 @@
+---
+- hosts: all
+  remote_user: root
+  become: yes
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+        autoclean: yes
+        upgrade: no
+        force_apt_get: yes
