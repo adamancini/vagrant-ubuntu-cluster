@@ -2,7 +2,6 @@
 # vi: set ft=ruby :
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'libvirt'
 
-
 Vagrant.configure(2) do |config|
 
   ### Environment Settings
@@ -13,7 +12,7 @@ Vagrant.configure(2) do |config|
     l.driver = "kvm"
     l.uri = 'qemu+unix:///system'
     # l.id_ssh_key_file = "/home/ada/.ssh/vagrant"
-    l.storage_pool_name = "ubuntu-swarm"
+    l.storage_pool_name = "default"
   end
   config.vm.provider :virtualbox do |v|
     # Set the timesync threshold to 10 seconds, instead of the default 20 minutes.
@@ -42,7 +41,7 @@ Vagrant.configure(2) do |config|
   config.landrush.host 'dtr.local.antiskub.net', '172.28.2.30'
   config.landrush.host 'ucp.local.antiskub.net', '172.28.2.30'
 
-  ## Try to automatically generate ansible host inventory by calling vm.provision without a playbook
+  ## Try to automatically generate ansible host inventory by calling vm.provision with a basic playbook
   config.vm.provision :ansible do |ansible|
     ansible.verbose = "v"
     ansible.playbook = "playbooks/apt-update.yaml"
@@ -83,7 +82,7 @@ Vagrant.configure(2) do |config|
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-node1" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "4096"
+      domain.memory = "8192"
       domain.cpus = 2
       domain.host = "ucp-node1"
     end
@@ -102,7 +101,7 @@ Vagrant.configure(2) do |config|
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-node2" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "4096"
+      domain.memory = "8192"
       domain.cpus = 2
       domain.host = "ucp-node2"
     end
@@ -121,7 +120,7 @@ Vagrant.configure(2) do |config|
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-node3" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "4096"
+      domain.memory = "8192"
       domain.cpus = 2
       domain.host = "ucp-node3"
     end
@@ -139,7 +138,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "dtr-node1" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "4096"
+      domain.memory = "8192"
       domain.cpus = 2
       domain.host = "dtr-node1"
     end
