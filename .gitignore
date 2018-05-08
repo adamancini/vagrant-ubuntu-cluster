@@ -1,6 +1,7 @@
 .vagrant
 *.vdi
 *.log
+ansible
 ansible/*
 ee_sub_id
 ee_url
