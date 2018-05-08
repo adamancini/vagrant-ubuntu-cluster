@@ -1,8 +1,18 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'libvirt'
+# EE Subscription
+ee_sub_url = File.open("ee_sub_id")
+EE_SUBSCRIPTION_ID = ee_sub_url.read.chomp
+
+if !EE_SUBSCRIPTION_ID && (ARGV.include?("up") || (ARGV.include?("provision")))
+  puts "Please set the environment variable 'EE_SUBSCRIPTION_ID' with a valid Docker EE subscription"
+  exit
+end
 
 Vagrant.configure(2) do |config|
+
+  config.vm.box = "centos/7"
 
   ### Environment Settings
   config.vm.provider :libvirt do |l|
@@ -21,7 +31,7 @@ Vagrant.configure(2) do |config|
 
   # don't remove entries from /etc/hosts on suspend
   config.hostsupdater.remove_on_suspend = false
-  config.landrush.guest_redirect_dns = true
+  config.landrush.guest_redirect_dns = false
   config.landrush.host_interface_class = :ipv4
   config.landrush.host_interface = 'eth1'
 
@@ -41,17 +51,6 @@ Vagrant.configure(2) do |config|
   config.landrush.host 'dtr.local.antiskub.net', '172.28.2.30'
   config.landrush.host 'ucp.local.antiskub.net', '172.28.2.30'
 
-  ## Try to automatically generate ansible host inventory by calling vm.provision with a basic playbook
-  config.vm.provision :ansible do |ansible|
-    ansible.verbose = "v"
-    ansible.playbook = "playbooks/apt-update.yaml"
-    ansible.groups = {
-      "managers"       => ["ucp-node1","ucp-node2","ucp-node3"],
-      "workers"        => ["worker-node1","worker-node2","worker-node3"],
-      "proxy"          => ["haproxy"],
-      "swarm:children" => ["managers","workers"]
-    }
-  end
 
   ### Virtual Machine definitions
 
@@ -62,15 +61,11 @@ Vagrant.configure(2) do |config|
       domain.cpus = 1
       domain.host = "haproxy"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", :ip => "172.28.2.30"
     node.vm.hostname = "haproxy.local.antiskub.net"
     node.hostsupdater.aliases = ["ucp.local.antiskub.net", "dtr.local.antiskub.net"]
     node.vm.provision "shell", inline: <<-SHELL
-      add-apt-repository ppa:vbernat/haproxy-1.7
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate haproxy software-properties-common
-      ntpdate -s time.nist.gov
-      # ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/haproxy-node
+      yum install -y haproxy
       sed -i '/module(load="imudp")/s/^#//g' /etc/rsyslog.conf
       sed -i '/input(type="imudp" port="514")/s/^#//g' /etc/rsyslog.conf
       service rsyslog restart
@@ -80,130 +75,157 @@ Vagrant.configure(2) do |config|
   end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "ucp-node1" do |node|
+  config.vm.define "ucp-1" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "8192"
       domain.cpus = 2
-      domain.host = "ucp-node1"
+      domain.host = "ucp-1"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.31"
-    node.vm.hostname = "ucp-node1.local.antiskub.net"
-    node.vm.provision "shell", inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-      ntpdate -s time.nist.gov
-      /vagrant/scripts/install_ee.sh
-      /vagrant/scripts/install_ucp.sh
-      /vagrant/scripts/create_tokens.sh
-   SHELL
+    node.vm.hostname = "ucp-1.local.antiskub.net"
+   #  node.vm.provision "shell", inline: <<-SHELL
+   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+   #    ntpdate -s time.nist.gov
+   #    /vagrant/scripts/install_ee.sh
+   #    /vagrant/scripts/install_ucp.sh
+   #    /vagrant/scripts/create_tokens.sh
+   # SHELL
   end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "ucp-node2" do |node|
+  config.vm.define "ucp-2" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "8192"
       domain.cpus = 2
-      domain.host = "ucp-node2"
+      domain.host = "ucp-2"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.32"
-    node.vm.hostname = "ucp-node2.local.antiskub.net"
+    node.vm.hostname = "ucp-2.local.antiskub.net"
     node.landrush.enabled = true
-    node.vm.provision "shell", inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-      ntpdate -s time.nist.gov
-      /vagrant/scripts/install_ee.sh
-      /vagrant/scripts/join_manager.sh
-    SHELL
+    # node.vm.provision "shell", inline: <<-SHELL
+    #   DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+    #   ntpdate -s time.nist.gov
+    #   /vagrant/scripts/install_ee.sh
+    #   /vagrant/scripts/join_manager.sh
+    # SHELL
   end
 
   # Docker EE node for ubuntu 7.3
-  config.vm.define "ucp-node3" do |node|
+  config.vm.define "ucp-3" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "8192"
       domain.cpus = 2
-      domain.host = "ucp-node3"
+      domain.host = "ucp-3"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.33"
-    node.vm.hostname = "ucp-node3.local.antiskub.net"
+    node.vm.hostname = "ucp-3.local.antiskub.net"
     node.landrush.enabled = true
-    node.vm.provision "shell", inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-      ntpdate -s time.nist.gov
-      /vagrant/scripts/install_ee.sh
-      /vagrant/scripts/join_manager.sh
-   SHELL
+   #  node.vm.provision "shell", inline: <<-SHELL
+   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+   #    ntpdate -s time.nist.gov
+   #    /vagrant/scripts/install_ee.sh
+   #    /vagrant/scripts/join_manager.sh
+   # SHELL
   end
 
-  config.vm.define "dtr-node1" do |node|
+  config.vm.define "dtr-1" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "8192"
       domain.cpus = 2
-      domain.host = "dtr-node1"
+      domain.host = "dtr-1"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.34"
-    node.vm.hostname = "dtr-node1.local.antiskub.net"
-    node.vm.provision "shell", inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-      ntpdate -s time.nist.gov
-      /vagrant/scripts/install_ee.sh
-      /vagrant/scripts/join_worker.sh
-      /vagrant/scripts/install_dtr.sh
-    SHELL
+    node.vm.hostname = "dtr-1.local.antiskub.net"
+    # node.vm.provision "shell", inline: <<-SHELL
+    #   DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+    #   ntpdate -s time.nist.gov
+    #   /vagrant/scripts/install_ee.sh
+    #   /vagrant/scripts/join_worker.sh
+    #   /vagrant/scripts/install_dtr.sh
+    # SHELL
   end
 
-  config.vm.define "worker-node1" do |node|
+  config.vm.define "worker-1" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "2048"
       domain.cpus = 1
-      domain.host = "worker-node1"
+      domain.host = "worker-1"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.35"
-    node.vm.hostname = "worker-node1.local.antiskub.net"
-    node.vm.provision "shell", inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-      ntpdate -s time.nist.gov
-      /vagrant/scripts/install_ee.sh
-      /vagrant/scripts/join_worker.sh
-   SHELL
+    node.vm.hostname = "worker-1.local.antiskub.net"
+    node.vm.provision "ansible" do |ansible|
+      ansible.playbook = "ansible/install.yml"
+      ansible.limit = "swarm"
+      ansible.raw_arguments = [
+        "--inventory", "ansible/inventory/2.groups"
+      ]
+      ansible.verbose = "v"
+      ansible.groups = {
+        # DCI provisioned groups
+        "linux-ucp-manager-primary" => ["ucp-1"],
+        "linux-ucp-manager-replicas" => ["ucp-2","ucp-3"],
+        "linux-dtr-worker-primary" => ["dtr-1"],
+        "linux-dtr-worker-replicas" => [],
+        "linux-workers" => ["worker-1", "worker-2", "worker-3"],
+        "windows-workers" => [],
+        "ucp-load-balancer" => ["haproxy"],
+        "dtr-load-balancer" => ["haproxy"],
+        # my additional groups
+        "managers"       => ["ucp-1","ucp-2","ucp-3"],
+        "workers"        => ["worker-1","worker-2","worker-3"],
+        "proxy"          => ["haproxy"],
+        "swarm:children" => ["managers","workers"]
+      }
+      ansible.extra_vars = {
+        docker_ucp_lb: "ucp.local.antiskub.net",
+        docker_dtr_lb: "dtr.local.antiskub.net",
+        docker_ee_subscriptions_ubuntu: EE_SUBSCRIPTION_ID,
+        docker_ee_subscriptions_centos: EE_SUBSCRIPTION_ID,
+        docker_dtr_replica_id: "1234567890ab",
+        docker_ucp_admin_password: "orca1234",
+        docker_swarm_listen_address: "172.28.2.31",
+        infra_stack: "vmware"  # not really vmware but required to skip irrelevant playbooks
+      }
+    end
+   #  node.vm.provision "shell", inline: <<-SHELL
+   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+   #    ntpdate -s time.nist.gov
+   #    /vagrant/scripts/install_ee.sh
+   #    /vagrant/scripts/join_worker.sh
+   # SHELL
   end
 
-  config.vm.define "worker-node2" do |node|
+  config.vm.define "worker-2" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "2048"
       domain.cpus = 1
-      domain.host = "worker-node2"
+      domain.host = "worker-2"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.36"
-    node.vm.hostname = "worker-node2.local.antiskub.net"
-    node.vm.provision "shell", inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-      ntpdate -s time.nist.gov
-      sleep 5
-      /vagrant/scripts/install_ee.sh
-      /vagrant/scripts/join_worker.sh
-   SHELL
+    node.vm.hostname = "worker-2.local.antiskub.net"
+   #  node.vm.provision "shell", inline: <<-SHELL
+   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+   #    ntpdate -s time.nist.gov
+   #    sleep 5
+   #    /vagrant/scripts/install_ee.sh
+   #    /vagrant/scripts/join_worker.sh
+   # SHELL
   end
 
-  config.vm.define "worker-node3" do |node|
+  config.vm.define "worker-3" do |node|
     node.vm.provider :libvirt do |domain|
       domain.memory = "2048"
       domain.cpus = 1
-      domain.host = "worker-node3"
+      domain.host = "worker-3"
     end
-    node.vm.box = "yk0/ubuntu-xenial"
     node.vm.network "private_network", ip: "172.28.2.37"
-    node.vm.hostname = "worker-node3.local.antiskub.net"
-    node.vm.provision "shell", inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-      ntpdate -s time.nist.gov
-      sleep 5
-      /vagrant/scripts/install_ee.sh
-      /vagrant/scripts/join_worker.sh
-   SHELL
+    node.vm.hostname = "worker-3.local.antiskub.net"
+   #  node.vm.provision "shell", inline: <<-SHELL
+   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
+   #    ntpdate -s time.nist.gov
+   #    sleep 5
+   #    /vagrant/scripts/install_ee.sh
+   #    /vagrant/scripts/join_worker.sh
+   # SHELL
   end
 end
