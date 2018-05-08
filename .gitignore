@@ -1,6 +1,8 @@
 .vagrant
 *.vdi
 *.log
+ansible/*
+ee_sub_id
 ee_url
 dtr-replica-id
 dtr-node1-ipaddr
