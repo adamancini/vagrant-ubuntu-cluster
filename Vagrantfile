@@ -63,33 +63,32 @@ Vagrant.configure(2) do |config|
     end
     node.vm.network "private_network", :ip => "172.28.2.30"
     node.vm.hostname = "haproxy.local.antiskub.net"
-    node.hostsupdater.aliases = ["ucp.local.antiskub.net", "dtr.local.antiskub.net"]
+    node.hostsupdater.aliases = ["local.antiskub.net", "ucp.local.antiskub.net", "dtr.local.antiskub.net"]
     node.vm.provision "shell", inline: <<-SHELL
       yum install -y haproxy
+      sed -i 's/enforcing/disabled/g' /etc/selinux/config
+      setenforce 0
       sed -i '/module(load="imudp")/s/^#//g' /etc/rsyslog.conf
       sed -i '/input(type="imudp" port="514")/s/^#//g' /etc/rsyslog.conf
       service rsyslog restart
       cp /vagrant/files/haproxy.cfg /etc/haproxy/haproxy.cfg
-      service haproxy restart
+      systemctl enable haproxy
+      systemctl restart haproxy
     SHELL
   end
 
   # Docker EE node for ubuntu 7.3
   config.vm.define "ucp-1" do |node|
     node.vm.provider :libvirt do |domain|
-      domain.memory = "8192"
-      domain.cpus = 2
+      domain.memory = "12000"
+      domain.cpus = 4
       domain.host = "ucp-1"
     end
     node.vm.network "private_network", ip: "172.28.2.31"
     node.vm.hostname = "ucp-1.local.antiskub.net"
-   #  node.vm.provision "shell", inline: <<-SHELL
-   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-   #    ntpdate -s time.nist.gov
-   #    /vagrant/scripts/install_ee.sh
-   #    /vagrant/scripts/install_ucp.sh
-   #    /vagrant/scripts/create_tokens.sh
-   # SHELL
+    # node.vm.provision "shell", inline: <<-SHELL
+    #   ntpdate -s time.nist.gov
+    # SHELL
   end
 
   # Docker EE node for ubuntu 7.3
@@ -103,10 +102,7 @@ Vagrant.configure(2) do |config|
     node.vm.hostname = "ucp-2.local.antiskub.net"
     node.landrush.enabled = true
     # node.vm.provision "shell", inline: <<-SHELL
-    #   DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
     #   ntpdate -s time.nist.gov
-    #   /vagrant/scripts/install_ee.sh
-    #   /vagrant/scripts/join_manager.sh
     # SHELL
   end
 
@@ -120,12 +116,9 @@ Vagrant.configure(2) do |config|
     node.vm.network "private_network", ip: "172.28.2.33"
     node.vm.hostname = "ucp-3.local.antiskub.net"
     node.landrush.enabled = true
-   #  node.vm.provision "shell", inline: <<-SHELL
-   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-   #    ntpdate -s time.nist.gov
-   #    /vagrant/scripts/install_ee.sh
-   #    /vagrant/scripts/join_manager.sh
-   # SHELL
+    # node.vm.provision "shell", inline: <<-SHELL
+    #   ntpdate -s time.nist.gov
+    # SHELL
   end
 
   config.vm.define "dtr-1" do |node|
@@ -137,11 +130,7 @@ Vagrant.configure(2) do |config|
     node.vm.network "private_network", ip: "172.28.2.34"
     node.vm.hostname = "dtr-1.local.antiskub.net"
     # node.vm.provision "shell", inline: <<-SHELL
-    #   DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
     #   ntpdate -s time.nist.gov
-    #   /vagrant/scripts/install_ee.sh
-    #   /vagrant/scripts/join_worker.sh
-    #   /vagrant/scripts/install_dtr.sh
     # SHELL
   end
 
@@ -153,6 +142,9 @@ Vagrant.configure(2) do |config|
     end
     node.vm.network "private_network", ip: "172.28.2.35"
     node.vm.hostname = "worker-1.local.antiskub.net"
+    # node.vm.provision "shell", inline: <<-SHELL
+    #   ntpdate -s time.nist.gov
+    # SHELL
     node.vm.provision "ansible" do |ansible|
       ansible.playbook = "ansible/install.yml"
       ansible.limit = "swarm"
@@ -163,7 +155,7 @@ Vagrant.configure(2) do |config|
       ansible.groups = {
         # DCI provisioned groups
         "linux-ucp-manager-primary" => ["ucp-1"],
-        "linux-ucp-manager-replicas" => ["ucp-2","ucp-3"],
+        "linux-ucp-manager-replicas" => [],
         "linux-dtr-worker-primary" => ["dtr-1"],
         "linux-dtr-worker-replicas" => [],
         "linux-workers" => ["worker-1", "worker-2", "worker-3"],
@@ -171,10 +163,10 @@ Vagrant.configure(2) do |config|
         "ucp-load-balancer" => ["haproxy"],
         "dtr-load-balancer" => ["haproxy"],
         # my additional groups
-        "managers"       => ["ucp-1","ucp-2","ucp-3"],
+        "system"       => ["ucp-1", "dtr-1"],
         "workers"        => ["worker-1","worker-2","worker-3"],
         "proxy"          => ["haproxy"],
-        "swarm:children" => ["managers","workers"]
+        "swarm:children" => ["system","workers"]
       }
       ansible.extra_vars = {
         docker_ucp_lb: "ucp.local.antiskub.net",
@@ -187,12 +179,6 @@ Vagrant.configure(2) do |config|
         infra_stack: "vmware"  # not really vmware but required to skip irrelevant playbooks
       }
     end
-   #  node.vm.provision "shell", inline: <<-SHELL
-   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-   #    ntpdate -s time.nist.gov
-   #    /vagrant/scripts/install_ee.sh
-   #    /vagrant/scripts/join_worker.sh
-   # SHELL
   end
 
   config.vm.define "worker-2" do |node|
@@ -203,13 +189,9 @@ Vagrant.configure(2) do |config|
     end
     node.vm.network "private_network", ip: "172.28.2.36"
     node.vm.hostname = "worker-2.local.antiskub.net"
-   #  node.vm.provision "shell", inline: <<-SHELL
-   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-   #    ntpdate -s time.nist.gov
-   #    sleep 5
-   #    /vagrant/scripts/install_ee.sh
-   #    /vagrant/scripts/join_worker.sh
-   # SHELL
+    # node.vm.provision "shell", inline: <<-SHELL
+    #   ntpdate -s time.nist.gov
+    # SHELL
   end
 
   config.vm.define "worker-3" do |node|
@@ -220,12 +202,8 @@ Vagrant.configure(2) do |config|
     end
     node.vm.network "private_network", ip: "172.28.2.37"
     node.vm.hostname = "worker-3.local.antiskub.net"
-   #  node.vm.provision "shell", inline: <<-SHELL
-   #    DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https ca-certificates ntpdate
-   #    ntpdate -s time.nist.gov
-   #    sleep 5
-   #    /vagrant/scripts/install_ee.sh
-   #    /vagrant/scripts/join_worker.sh
-   # SHELL
+    # node.vm.provision "shell", inline: <<-SHELL
+    #   ntpdate -s time.nist.gov
+    # SHELL
   end
 end

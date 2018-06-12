@@ -6,7 +6,13 @@ help:    ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
 start:
-	@vagrant up haproxy ucp-1 dtr-1 worker-1 worker-2
+	@vagrant up --provider libvirt haproxy ucp-1 worker-1 worker-2
+
+full:
+	@vagrant up --provider libvirt haproxy ucp-1 worker-1 worker-2 worker-3
+
+dtr:
+	@vagrant up --provider libvirt dtr-1
 
 stop:
 	@vagrant halt
