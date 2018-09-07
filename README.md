@@ -1,3 +1,6 @@
+Warning: all of this documentation is super out of date and possibly irrelevant.  here be dragons.
+
+
 Vagrant Virtualbox setup for Docker EE 17.03 on Ubuntu Xenial 16.04
 ========================
 
